@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+data/judge_cache.json
+data/judge_cache.json.tmp
+config/*.tmp

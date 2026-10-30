@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COD Order Guard</title>
+<style>
+:root {
+  color-scheme: light;
+  --surface-0: #f4f3f0; --surface-1: #fcfcfb; --surface-2: #efeeea; --border: #dddcd6;
+  --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #77766f;
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+  --good: #0a7a3d; --bad: #c4352f; --accent: #2a78d6;
+  --bubble-out: #dcf4e3; --bubble-in: #ffffff; --chat-bg: #ece5dd;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --surface-0: #111110; --surface-1: #1a1a19; --surface-2: #242422; --border: #383835;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+    --good: #4cc47e; --bad: #f07a74; --accent: #5598e7;
+    --bubble-out: #144d37; --bubble-in: #262624; --chat-bg: #151514;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #111110; --surface-1: #1a1a19; --surface-2: #242422; --border: #383835;
+  --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+  --good: #4cc47e; --bad: #f07a74; --accent: #5598e7;
+  --bubble-out: #144d37; --bubble-in: #262624; --chat-bg: #151514;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--surface-0); color: var(--text-primary);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 24px;
+  background: var(--surface-1); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; }
+header h1 { font-size: 17px; margin: 0 12px 0 0; }
+nav { display: flex; gap: 4px; flex-wrap: wrap; }
+nav button { border: 0; background: none; color: var(--text-secondary); font: inherit; padding: 6px 12px;
+  border-radius: 8px; cursor: pointer; }
+nav button.on { background: var(--surface-2); color: var(--text-primary); font-weight: 600; }
+.pill { font-size: 12px; padding: 3px 9px; border-radius: 99px; background: var(--surface-2); color: var(--text-secondary); }
+header .spacer { flex: 1; }
+main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; }
+section.tab { display: none; } section.tab.on { display: block; }
+h2 { font-size: 22px; margin: 4px 0 2px; } .sub { color: var(--text-secondary); margin: 0 0 18px; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+.grid { display: grid; gap: 14px; }
+.kpis { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 14px; }
+.kpi .label { color: var(--text-secondary); font-size: 13px; }
+.kpi .value { font-size: 30px; font-weight: 650; letter-spacing: -0.5px; margin: 2px 0; font-variant-numeric: tabular-nums; }
+.kpi .note { color: var(--text-muted); font-size: 12.5px; }
+.pos { color: var(--good); } .neg { color: var(--bad); }
+.two { grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.6fr); margin-bottom: 14px; }
+@media (max-width: 760px) { .two { grid-template-columns: 1fr; } header { padding: 12px 16px; } }
+.card h3 { margin: 0 0 12px; font-size: 15px; }
+.bucket { display: grid; grid-template-columns: 170px 1fr 44px; align-items: center; gap: 10px; margin: 9px 0; font-size: 14px; }
+.bucket .bar { height: 18px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.bucket .bar span { display: block; height: 100%; border-radius: 0 4px 4px 0; }
+.bucket b { text-align: right; font-variant-numeric: tabular-nums; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 7px; vertical-align: -1px; }
+.c-ship { background: var(--series-1); } .c-nudge { background: var(--series-2); }
+.c-confirm { background: var(--series-3); } .c-hold { background: var(--series-4); }
+#trend { width: 100%; height: 190px; display: block; }
+.tip { position: fixed; pointer-events: none; background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 10px; font-size: 13px; box-shadow: 0 4px 16px #0003; display: none; z-index: 20; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { white-space: nowrap; text-align: left; color: var(--text-secondary); font-weight: 500; font-size: 12.5px; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+td { padding: 9px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { display: inline-flex; align-items: center; white-space: nowrap; font-size: 12.5px; font-weight: 600; }
+.reason { color: var(--text-secondary); font-size: 13px; max-width: 560px; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
+.filters button, .btn { font: inherit; font-size: 13.5px; border: 1px solid var(--border); background: var(--surface-1);
+  color: var(--text-primary); padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+.filters button.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.btn:disabled { opacity: .5; cursor: default; }
+select, input[type=text], input[type=number], textarea { font: inherit; color: var(--text-primary); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; width: 100%; }
+label.f { display: block; font-size: 13px; color: var(--text-secondary); }
+label.f > * { margin-top: 4px; }
+.form { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.result h3 { font-size: 20px; margin: 0; }
+ul.reasons { margin: 8px 0; padding-left: 18px; } ul.reasons li { margin: 3px 0; }
+.chat-wrap { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; gap: 14px; }
+@media (max-width: 860px) { .chat-wrap { grid-template-columns: 1fr; } }
+.phone { background: var(--chat-bg); border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; height: 620px; overflow: hidden; }
+.phone .top { background: #075e54; color: #fff; padding: 10px 14px; font-weight: 600; }
+.phone .top small { display: block; font-weight: 400; opacity: .85; }
+.msgs { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.msg { max-width: 85%; padding: 7px 10px 5px; border-radius: 10px; white-space: pre-wrap; font-size: 14px; box-shadow: 0 1px 1px #0002; }
+.msg.out { align-self: flex-start; background: var(--bubble-in); }
+.msg.in { align-self: flex-end; background: var(--bubble-out); }
+.msg time { display: block; text-align: right; font-size: 11px; color: var(--text-muted); }
+.msg .qr { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.msg .qr button { border: 0; border-top: 1px solid var(--border); background: none; color: var(--accent); font: inherit; padding: 5px; cursor: pointer; }
+.sys { align-self: center; font-size: 12px; color: var(--text-muted); background: var(--surface-1); padding: 3px 10px; border-radius: 8px; max-width: 92%; text-align: center; }
+.compose { display: flex; gap: 6px; padding: 8px; background: var(--surface-1); }
+.status { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; }
+.status dt { color: var(--text-secondary); }
+.toggle { display: flex; gap: 10px; align-items: center; margin: 7px 0; font-size: 14px; }
+.toggle input { width: 18px; height: 18px; flex: none; }
+.muted { color: var(--text-muted); } .small { font-size: 13px; }
+.flash { padding: 10px 12px; border-radius: 8px; background: var(--surface-2); margin-top: 10px; font-size: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🛡️ COD Order Guard</h1>
+  <nav>
+    <button data-tab="report" class="on">Morning report</button>
+    <button data-tab="check">Check an order</button>
+    <button data-tab="wa">WhatsApp simulator</button>
+    <button data-tab="rules">Rules</button>
+  </nav>
+  <span class="spacer"></span>
+  <span class="pill" id="llmPill">…</span>
+  <button class="btn" id="themeBtn" title="Toggle light/dark">◐</button>
+</header>
+<div class="tip" id="tip"></div>
+<main>
+
+<!-- ============================================================ REPORT -->
+<section class="tab on" id="tab-report">
+  <div style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;justify-content:space-between">
+    <div>
+      <h2 id="repTitle">Yesterday</h2>
+      <p class="sub">Replaying September 2026, the month the model never saw. Pick any day as "yesterday".</p>
+    </div>
+    <label class="f" style="width:180px">Day <select id="daySel"></select></label>
+  </div>
+
+  <div class="grid kpis">
+    <div class="card kpi"><div class="label">COD orders checked</div><div class="value" id="kOrders">–</div><div class="note" id="kOrdersNote"></div></div>
+    <div class="card kpi"><div class="label">₹ saved from avoided RTOs</div><div class="value pos" id="kSaved">–</div><div class="note" id="kSavedNote"></div></div>
+    <div class="card kpi"><div class="label">₹ lost on orders that were probably genuine</div><div class="value neg" id="kLost">–</div><div class="note" id="kLostNote"></div></div>
+    <div class="card kpi"><div class="label">Net ₹ impact</div><div class="value" id="kNet">–</div><div class="note" id="kNetNote"></div></div>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <h3>What happened to yesterday's orders</h3>
+      <div id="buckets"></div>
+      <p class="small muted" id="monthLine" style="margin:12px 0 0"></p>
+    </div>
+    <div class="card">
+      <h3>Net ₹ impact per day, last 30 days</h3>
+      <svg id="trend" role="img" aria-label="Daily net rupee impact"></svg>
+      <p class="small muted" style="margin:6px 0 0">Bars above the line: the rules made money that day. Hover for details.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Orders that needed a decision</h3>
+    <div class="filters" id="orderFilters"></div>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Order</th><th>Customer</th><th>Decision</th><th class="num">Risk</th><th>Why</th><th class="num">₹ net</th><th></th></tr></thead>
+      <tbody id="orderRows"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============================================================ CHECK -->
+<section class="tab" id="tab-check">
+  <h2>Check a new COD order</h2>
+  <p class="sub">What the engine does with every order before it ships. Try a vague address, a fake name, or a customer with past returns.</p>
+  <div class="card">
+    <div class="grid form">
+      <label class="f">Customer name <input type="text" id="fName" value="Pooja Yadav"></label>
+      <label class="f">Phone <input type="text" id="fPhone" value="9876543210"></label>
+      <label class="f" style="grid-column: span 2">Address <input type="text" id="fAddr" value="ph krke aana, Hanuman Mandir ke paas"></label>
+      <label class="f">City <input type="text" id="fCity" value="Gorakhpur"></label>
+      <label class="f">State <input type="text" id="fState" value="Uttar Pradesh"></label>
+      <label class="f">Pincode <input type="text" id="fPin" value="273001"></label>
+      <label class="f">Order value ₹ <input type="number" id="fValue" value="1497"></label>
+      <label class="f">Items (separate with |) <input type="text" id="fItems" value="Hair Oil 100ml|Satin Bonnet|Heatless Curling Set"></label>
+      <label class="f">Past orders <input type="number" id="fPrior" value="0" min="0"></label>
+      <label class="f">Past returns (RTO) <input type="number" id="fPriorRto" value="0" min="0"></label>
+      <label class="f">Came from <select id="fSrc">
+        <option>meta_ads</option><option>google_ads</option><option>instagram_organic</option>
+        <option>influencer</option><option>whatsapp_broadcast</option><option>direct</option></select></label>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn primary" id="checkBtn">Decide</button>
+      <button class="btn" data-ex="junk">Example: "xyz" address</button>
+      <button class="btn" data-ex="loyal">Example: loyal customer</button>
+      <button class="btn" data-ex="refuser">Example: refused twice before</button>
+    </div>
+  </div>
+  <div class="card result" id="checkResult" style="margin-top:14px;display:none"></div>
+</section>
+
+<!-- ============================================================ WHATSAPP -->
+<section class="tab" id="tab-wa">
+  <h2>WhatsApp simulator</h2>
+  <p class="sub">A mock of the confirm / prepaid-nudge / hold flows. Nothing is really sent. Move the clock forward to see reminders and the 24-hour timeout.</p>
+  <div class="card" style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+    <label class="f" style="flex:1;min-width:260px">Start a conversation for <select id="waOrder"></select></label>
+    <button class="btn primary" id="waStart">Start</button>
+  </div>
+  <div class="chat-wrap">
+    <div class="phone">
+      <div class="top" id="waTop">No conversation yet<small>Pick an order above</small></div>
+      <div class="msgs" id="waMsgs"></div>
+      <div class="compose">
+        <input type="text" id="waText" placeholder="Type as the customer: haan bhej do / cancel / H.No 12, …">
+        <button class="btn primary" id="waSend">Send</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Conversation status</h3>
+      <dl class="status" id="waStatus"><dt>State</dt><dd>–</dd></dl>
+      <h3 style="margin-top:18px">Move the clock</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" data-adv="1">+1 hour</button><button class="btn" data-adv="4">+4 hours</button>
+        <button class="btn" data-adv="12">+12 hours</button><button class="btn" data-adv="24">+24 hours</button>
+        <button class="btn" id="waPay">Customer pays online</button>
+      </div>
+      <h3 style="margin-top:18px">Try these replies</h3>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="waSamples"></div>
+      <p class="small muted" style="margin-top:14px">Replies are read with button IDs and keywords first. Anything else goes to Claude when an API key is set, otherwise to an offline fallback that re-asks once and then hands over to a person.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ RULES -->
+<section class="tab" id="tab-rules">
+  <h2>Rules</h2>
+  <p class="sub">Change these without touching code. "Preview" replays September with your numbers before you save.</p>
+  <div class="grid two">
+    <div class="card">
+      <h3>When to act (risk = chance the order comes back)</h3>
+      <div class="grid form" style="grid-template-columns:1fr 1fr 1fr">
+        <label class="f">Nudge to prepaid from % <input type="number" id="tNudge" min="0" max="101"></label>
+        <label class="f">WhatsApp confirm from % <input type="number" id="tConfirm" min="0" max="101"></label>
+        <label class="f">Hold / cancel from % <input type="number" id="tHold" min="0" max="101"></label>
+      </div>
+      <p class="small muted">Below the nudge level, orders ship as-is. Use 101 to switch a step off.</p>
+      <label class="f" style="max-width:220px;margin-top:10px">Prepaid discount ₹ <input type="number" id="tDisc" min="0"></label>
+      <h3 style="margin-top:18px">Always-on rules</h3>
+      <div id="ruleToggles"></div>
+      <label class="f" style="max-width:320px;margin-top:8px">Hold if customer refused at least this many earlier COD orders (0 = off)
+        <input type="number" id="rPriorRto" min="0"></label>
+      <label class="f" style="max-width:320px;margin-top:8px">The risk score alone can at most do this to a first-time buyer
+        <select id="rFirstCap"><option value="confirm">WhatsApp confirm (never auto-cancel)</option><option value="hold">Hold / cancel (no protection)</option></select></label>
+    </div>
+    <div class="card">
+      <h3>Assumptions to measure</h3>
+      <p class="small muted" style="margin-top:-6px">These are not in the data yet. Update them after the first two weeks of real WhatsApp results.</p>
+      <div class="grid form" style="grid-template-columns:1fr 1fr">
+        <label class="f">Confirmation catches % of would-be RTOs <input type="number" id="aCatch"></label>
+        <label class="f">Confirmation loses % of genuine buyers <input type="number" id="aLose"></label>
+        <label class="f">% who take the prepaid offer <input type="number" id="aConv"></label>
+        <label class="f">Future value of a new buyer ₹ <input type="number" id="aFuture"></label>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn" id="previewBtn">Preview on September</button>
+        <button class="btn primary" id="saveBtn">Save rules</button>
+      </div>
+      <div id="previewOut"></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const rs = n => (n < 0 ? "−₹" : "₹") + Math.abs(Math.round(n)).toLocaleString("en-IN");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ACTIONS = ["ship", "nudge", "confirm", "hold"];
+let META = null, DAY = null, FILTER = "attention", WA = null;
+
+async function api(path, body) {
+  const r = await fetch(path, body ? {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)} : {});
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+
+// ---------------------------------------------------------------- theme + tabs
+try { const t = new URLSearchParams(location.search).get("theme") || localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+$("#themeBtn").onclick = () => {
+  const dark = getComputedStyle(document.documentElement).colorScheme === "dark";
+  document.documentElement.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("theme", document.documentElement.dataset.theme); } catch (e) {}
+  if (DAY) drawTrend(DAY.trend);
+};
+$$("nav button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+function showTab(t) {
+  $$("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  $$("section.tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + t));
+  if (t === "rules") loadRules();
+  if (t === "wa") fillWaOrders();
+  history.replaceState(null, "", "#" + t);
+}
+
+// ---------------------------------------------------------------- report
+async function init() {
+  META = await api("/api/meta");
+  $("#llmPill").textContent = META.llm ? "LLM: Claude on" : "LLM: offline fallback";
+  $("#llmPill").title = META.llm ? "Addresses, names and free-text replies are judged by Claude" :
+    "No ANTHROPIC_API_KEY: addresses/names/replies are judged by rule-based fallbacks";
+  $("#daySel").innerHTML = META.dates.slice().reverse().map(d => `<option>${d}</option>`).join("");
+  $("#daySel").onchange = () => loadDay($("#daySel").value);
+  await loadDay(META.latest);
+  const h = location.hash.slice(1);
+  if (["check", "wa", "rules"].includes(h)) showTab(h);
+  if (h === "check") checkOrder();
+}
+
+async function loadDay(date) {
+  DAY = await api("/api/day?date=" + date);
+  const s = DAY.summary, d = new Date(date + "T00:00");
+  $("#repTitle").textContent = "Yesterday: " + d.toLocaleDateString("en-IN", {weekday: "long", day: "numeric", month: "long", year: "numeric"});
+  const acted = s.orders - s.buckets.ship;
+  $("#kOrders").textContent = s.orders;
+  $("#kOrdersNote").textContent = `${acted} needed action, ${s.buckets.ship} shipped straight away`;
+  $("#kSaved").textContent = rs(s.expected.saved);
+  $("#kSavedNote").textContent = `expected from risk scores · ${rs(s.actual.saved)} using what really happened`;
+  $("#kLost").textContent = rs(s.expected.lost);
+  $("#kLostNote").textContent = `margin + future orders we gave up · ${rs(s.actual.lost)} actual`;
+  const net = s.expected.net;
+  $("#kNet").textContent = rs(net);
+  $("#kNet").className = "value " + (net >= 0 ? "pos" : "neg");
+  $("#kNetNote").textContent = `after ${rs(s.expected.cost)} discounts + WhatsApp · ${rs(s.actual.net)} actual`;
+  const max = Math.max(1, ...ACTIONS.map(a => s.buckets[a]));
+  $("#buckets").innerHTML = ACTIONS.map(a => `
+    <div class="bucket"><span><span class="dot c-${a}"></span>${META.labels[a]}</span>
+      <div class="bar" title="${s.buckets[a]} orders"><span class="c-${a}" style="width:${100 * s.buckets[a] / max}%"></span></div>
+      <b>${s.buckets[a]}</b></div>`).join("");
+  const m = DAY.month;
+  $("#monthLine").textContent = `All of September: ${m.orders} orders → ${ACTIONS.map(a => m.buckets[a] + " " + a).join(", ")}. ` +
+    `Net ${rs(m.expected.net)} expected, ${rs(m.actual.net)} against real outcomes.`;
+  drawTrend(DAY.trend);
+  renderOrders();
+}
+
+function renderOrders() {
+  const counts = {attention: DAY.orders.filter(o => o.action !== "ship").length, all: DAY.orders.length};
+  ACTIONS.forEach(a => counts[a] = DAY.orders.filter(o => o.action === a).length);
+  $("#orderFilters").innerHTML = [["attention", "Needed action"], ["hold", "Hold"], ["confirm", "Confirm"], ["nudge", "Nudge"], ["ship", "Ship"], ["all", "All"]]
+    .map(([k, l]) => `<button data-f="${k}" class="${FILTER === k ? "on" : ""}">${l} (${counts[k]})</button>`).join("");
+  $$("#orderFilters button").forEach(b => b.onclick = () => { FILTER = b.dataset.f; renderOrders(); });
+  const rows = DAY.orders.filter(o => FILTER === "all" || (FILTER === "attention" ? o.action !== "ship" : o.action === FILTER));
+  $("#orderRows").innerHTML = rows.map(o => `<tr>
+    <td><b>${esc(o.order_id)}</b><div class="small muted">${esc(o.time)} · ₹${o.value}</div></td>
+    <td>${esc(o.customer)}<div class="small muted">${esc(o.city)}${o.first_time ? " · first order" : ""}</div></td>
+    <td><span class="chip"><span class="dot c-${o.action}"></span>${esc(o.action_label)}</span>
+      <div class="small muted">really: ${esc(o.actual || "?")}</div></td>
+    <td class="num">${o.risk_pct}%</td>
+    <td class="reason">${esc(o.reason)}</td>
+    <td class="num ${o.impact.net >= 0 ? "pos" : "neg"}">${rs(o.impact.net)}</td>
+    <td>${o.action !== "ship" ? `<button class="btn" data-wa="${esc(o.key)}">WhatsApp</button>` : ""}</td></tr>`).join("")
+    || `<tr><td colspan="7" class="muted">No orders here.</td></tr>`;
+  $$("[data-wa]").forEach(b => b.onclick = () => startWa(b.dataset.wa));
+}
+
+function drawTrend(days) {
+  const svg = $("#trend"), W = svg.clientWidth || 600, H = 190, pad = {l: 48, r: 8, t: 10, b: 22};
+  const vals = days.map(d => d.net);
+  const hi = Math.max(0, ...vals), lo = Math.min(0, ...vals), span = (hi - lo) || 1;
+  const y = v => pad.t + (hi - v) / span * (H - pad.t - pad.b);
+  const bw = (W - pad.l - pad.r) / Math.max(days.length, 1);
+  const css = getComputedStyle(document.documentElement);
+  const c1 = css.getPropertyValue("--series-1"), muted = css.getPropertyValue("--text-muted"), grid = css.getPropertyValue("--border");
+  let g = `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(0)}" y2="${y(0)}" stroke="${muted}" stroke-width="1"/>`;
+  [hi, lo].forEach(v => { if (v !== 0) g += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(v)}" y2="${y(v)}" stroke="${grid}" stroke-dasharray="3 3"/>
+    <text x="${pad.l - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="${muted}">${rs(v)}</text>`; });
+  g += `<text x="${pad.l - 6}" y="${y(0) + 4}" text-anchor="end" font-size="11" fill="${muted}">₹0</text>`;
+  days.forEach((d, i) => {
+    const x = pad.l + i * bw + 1, w = Math.max(bw - 2, 2), top = Math.min(y(d.net), y(0)), h = Math.max(Math.abs(y(d.net) - y(0)), 1);
+    const r = Math.min(4, w / 2);
+    g += `<rect x="${x}" y="${top}" width="${w}" height="${h}" rx="${r}" fill="${c1}"/>`;
+    g += `<rect class="hit" data-i="${i}" x="${pad.l + i * bw}" y="${pad.t}" width="${bw}" height="${H - pad.t - pad.b}" fill="transparent"/>`;
+    if (i === 0 || i === days.length - 1) g += `<text x="${x + w / 2}" y="${H - 6}" text-anchor="middle" font-size="11" fill="${muted}">${d.date.slice(5)}</text>`;
+  });
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = g;
+  const tip = $("#tip");
+  svg.querySelectorAll(".hit").forEach(r => {
+    r.onmousemove = e => { const d = days[r.dataset.i];
+      tip.innerHTML = `<b>${d.date}</b><br>saved ${rs(d.saved)} · lost ${rs(d.lost)}<br>discounts+WA ${rs(d.cost)}<br><b>net ${rs(d.net)}</b> (actual ${rs(d.actual_net)})`;
+      tip.style.display = "block"; tip.style.left = Math.min(e.clientX + 12, innerWidth - 220) + "px"; tip.style.top = (e.clientY + 12) + "px"; };
+    r.onmouseleave = () => tip.style.display = "none";
+    r.onclick = () => { $("#daySel").value = days[r.dataset.i].date; loadDay(days[r.dataset.i].date); };
+  });
+}
+
+// ---------------------------------------------------------------- check an order
+const EXAMPLES = {
+  junk: {fName: "asdf", fAddr: "xyz", fCity: "Darbhanga", fState: "Bihar", fPin: "846004", fValue: 499, fPrior: 0, fPriorRto: 0, fSrc: "meta_ads", fItems: "Claw Clip Set"},
+  loyal: {fName: "Ananya Iyer", fAddr: "Flat 204, Lotus Apartments, MG Road", fCity: "Pune", fState: "Maharashtra", fPin: "411001", fValue: 898, fPrior: 3, fPriorRto: 0, fSrc: "direct", fItems: "Satin Bonnet|Hair Oil 100ml"},
+  refuser: {fName: "Rohit Kumar", fAddr: "House No. 12, Sector 4, near SBI Bank", fCity: "Patna", fState: "Bihar", fPin: "800001", fValue: 1198, fPrior: 3, fPriorRto: 2, fSrc: "meta_ads", fItems: "Heatless Curling Set|Satin Pillowcase"},
+};
+$$("[data-ex]").forEach(b => b.onclick = () => { Object.entries(EXAMPLES[b.dataset.ex]).forEach(([k, v]) => $("#" + k).value = v); checkOrder(); });
+$("#checkBtn").onclick = checkOrder;
+async function checkOrder() {
+  const items = $("#fItems").value;
+  const body = {customer_name: $("#fName").value, phone: $("#fPhone").value, address: $("#fAddr").value,
+    city: $("#fCity").value, state: $("#fState").value, pincode: $("#fPin").value, order_value: $("#fValue").value,
+    items, num_items: items.split("|").filter(Boolean).length, customer_prior_orders: $("#fPrior").value,
+    customer_prior_rto: $("#fPriorRto").value, utm_source: $("#fSrc").value, payment_method: "COD"};
+  const el = $("#checkResult"); el.style.display = "block"; el.innerHTML = "Deciding…";
+  try {
+    const d = await api("/api/decide", body);
+    el.innerHTML = `<h3><span class="dot c-${d.action}"></span>${esc(d.action_label)} <span class="muted" style="font-weight:400">· ${d.risk_pct}% chance of return</span></h3>
+      <p>${esc(d.reason)}</p>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+        <div><b class="small">Pushes risk up</b><ul class="reasons">${d.risk_up.map(r => `<li>${esc(r)}</li>`).join("") || "<li class='muted'>nothing</li>"}</ul></div>
+        <div><b class="small">Pulls risk down</b><ul class="reasons">${d.risk_down.map(r => `<li>${esc(r)}</li>`).join("") || "<li class='muted'>nothing</li>"}</ul></div>
+        <div><b class="small">₹ vs just shipping it</b><ul class="reasons">
+          <li>saves ${rs(d.impact.saved)} of expected RTO cost</li><li>risks ${rs(d.impact.lost)} of genuine margin</li>
+          <li>costs ${rs(d.impact.cost)} (discount + WhatsApp)</li><li><b>net ${rs(d.impact.net)}</b></li></ul></div>
+      </div>
+      <p class="small muted">Address judged as <b>${esc(d.judgement.address_quality)}</b>, name ${d.judgement.name_plausible ? "looks real" : "looks fake"} (by ${esc(d.judgement.source)}).
+      Pure ₹ maths alone would pick: ${esc(META.labels[d.money_best_action])}.</p>
+      ${d.action !== "ship" ? `<button class="btn primary" id="checkWa">Open WhatsApp flow for this order</button>` : ""}`;
+    const b = $("#checkWa"); if (b) b.onclick = () => startWa(d.key, true);
+  } catch (e) { el.textContent = "Error: " + e.message; }
+}
+
+// ---------------------------------------------------------------- whatsapp
+const SAMPLES = ["YES", "haan bhej do", "nahi chahiye", "PAY", "kal aana please", "H.No 45, Rapti Nagar Phase 2, near Bus Stand", "kitne din mein aayega?", "Hindi", "English", "asdfgh"];
+$("#waSamples").innerHTML = SAMPLES.map(s => `<button class="btn" style="font-size:12.5px">${esc(s)}</button>`).join("");
+$$("#waSamples button").forEach(b => b.onclick = () => waReply(b.textContent));
+function fillWaOrders() {
+  if (!DAY) return;
+  const cur = $("#waOrder").value;
+  $("#waOrder").innerHTML = DAY.orders.filter(o => o.action !== "ship")
+    .map(o => `<option value="${esc(o.key)}">${esc(o.order_id)} · ${esc(o.customer)} · ${esc(o.action_label)} (${o.risk_pct}%)</option>`).join("");
+  if (cur) $("#waOrder").value = cur;
+}
+$("#waStart").onclick = () => startWa($("#waOrder").value);
+async function startWa(key, asNow) {
+  showTab("wa");
+  try { WA = await api("/api/wa/start", {key, as_now: !!asNow}); renderWa(); }
+  catch (e) { alert(e.message); }
+}
+$("#waSend").onclick = () => { const t = $("#waText").value.trim(); if (t) { waReply(t); $("#waText").value = ""; } };
+$("#waText").onkeydown = e => { if (e.key === "Enter") $("#waSend").click(); };
+async function waReply(text) { if (!WA) return; WA = await api(`/api/wa/${WA.id}/reply`, {text}); renderWa(); }
+$$("[data-adv]").forEach(b => b.onclick = async () => { if (!WA) return; WA = await api(`/api/wa/${WA.id}/advance`, {hours: +b.dataset.adv}); renderWa(); });
+$("#waPay").onclick = async () => { if (!WA) return; WA = await api(`/api/wa/${WA.id}/pay`, {}); renderWa(); };
+const STATE_TEXT = {scheduled: "Waiting for morning (quiet hours)", awaiting: "Waiting for customer", awaiting_address: "Confirmed, waiting for full address",
+  awaiting_payment: "Waiting for online payment", confirmed: "Confirmed → ship COD", paid: "Paid online → ship prepaid",
+  shipped_cod: "Shipped as COD", cancelled: "Cancelled by customer", cancelled_no_reply: "Cancelled: no reply"};
+const fmtT = iso => new Date(iso).toLocaleString("en-IN", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
+function renderWa() {
+  const c = WA;
+  $("#waTop").innerHTML = `${esc(c.customer.name)} · +91 ${esc(c.customer.phone || "—")}<small>${esc(c.customer.city)} · ${c.lang === "hi" ? "Hinglish" : "English"} · ${esc(c.decision.action_label)}</small>`;
+  const lastOut = c.messages.map(m => m.dir).lastIndexOf("out");
+  $("#waMsgs").innerHTML = c.messages.map((m, i) => m.dir === "system"
+    ? `<div class="sys">⚙️ ${esc(m.text)}</div>`
+    : `<div class="msg ${m.dir}">${esc(m.text)}${m.buttons && m.buttons.length && i === lastOut && !["confirmed","paid","shipped_cod","cancelled","cancelled_no_reply"].includes(c.state)
+        ? `<div class="qr">${m.buttons.map(b => `<button>${esc(b)}</button>`).join("")}</div>` : ""}<time>${fmtT(m.at)}</time></div>`).join("");
+  $$("#waMsgs .qr button").forEach(b => b.onclick = () => waReply(b.textContent.includes("Pay") ? "PAY" : b.textContent.includes("Cancel") || b.textContent.includes("No") ? "NO" : "YES"));
+  $("#waMsgs").scrollTop = 1e9;
+  const wh = {ship_cod: "Ship as COD", ship_prepaid: "Ship as prepaid", cancel: "Cancel", wait: "Wait"}[c.warehouse_action];
+  $("#waStatus").innerHTML = `<dt>State</dt><dd><b>${esc(STATE_TEXT[c.state] || c.state)}</b></dd>
+    <dt>Warehouse</dt><dd>${esc(wh)}</dd><dt>Clock</dt><dd>${fmtT(c.now)}</dd>
+    <dt>Since first msg</dt><dd>${c.sent_at ? c.hours_since_sent + " h" : "not sent yet"}</dd>
+    <dt>Needs a person</dt><dd>${c.agent_flag ? "Yes, flagged for support" : "No"}</dd>
+    <dt>Why this flow</dt><dd class="small">${esc(c.decision.reason)}</dd>`;
+}
+
+// ---------------------------------------------------------------- rules
+const RULES = [["hold_if_fake_name_and_unusable_address", "Hold if the name looks fake AND the address is unusable"],
+  ["confirm_if_address_unusable", "Confirm (and ask for the full address) if the address is unusable"],
+  ["confirm_if_name_implausible", "Confirm if the name looks fake (even with a good address)"],
+  ["confirm_if_pincode_missing", "Confirm if the pincode is missing"],
+  ["hold_if_phone_invalid", "Hold if the phone number is invalid (otherwise ship; we can't WhatsApp them)"],
+  ["hold_if_zero_value", "Hold ₹0 orders (test/internal)"]];
+let POLICY = null;
+async function loadRules() {
+  POLICY = await api("/api/policy");
+  const t = POLICY.thresholds, a = POLICY.assumptions;
+  $("#tNudge").value = t.nudge_from; $("#tConfirm").value = t.confirm_from; $("#tHold").value = t.hold_from;
+  $("#tDisc").value = POLICY.prepaid_nudge.discount_rupees;
+  $("#rPriorRto").value = POLICY.rules.hold_if_prior_rto_at_least; $("#rFirstCap").value = POLICY.rules.first_time_buyers_max_action;
+  $("#aCatch").value = a.confirm_catches_rto_pct; $("#aLose").value = a.confirm_loses_genuine_pct;
+  $("#aConv").value = a.nudge_conversion_pct; $("#aFuture").value = a.future_value_first_time_buyer;
+  $("#ruleToggles").innerHTML = RULES.map(([k, l]) => `<label class="toggle"><input type="checkbox" data-rule="${k}" ${POLICY.rules[k] ? "checked" : ""}>${l}</label>`).join("");
+}
+function readRules() {
+  const rules = {hold_if_prior_rto_at_least: +$("#rPriorRto").value, first_time_buyers_max_action: $("#rFirstCap").value};
+  $$("[data-rule]").forEach(c => rules[c.dataset.rule] = c.checked);
+  return {thresholds: {nudge_from: +$("#tNudge").value, confirm_from: +$("#tConfirm").value, hold_from: +$("#tHold").value},
+    prepaid_nudge: {discount_rupees: +$("#tDisc").value}, rules,
+    assumptions: {confirm_catches_rto_pct: +$("#aCatch").value, confirm_loses_genuine_pct: +$("#aLose").value,
+      nudge_conversion_pct: +$("#aConv").value, future_value_first_time_buyer: +$("#aFuture").value}};
+}
+function monthHtml(m, title) {
+  return `<div class="flash"><b>${title}</b><br>${ACTIONS.map(a => `<span class="dot c-${a}"></span>${m.buckets[a]} ${a}`).join(" &nbsp; ")}<br>
+    Against real September outcomes: saved ${rs(m.actual.saved)}, lost ${rs(m.actual.lost)}, discounts+WhatsApp ${rs(m.actual.cost)} →
+    <b class="${m.actual.net >= 0 ? "pos" : "neg"}">net ${rs(m.actual.net)}</b> (≈ ${rs(m.actual.net * 1650 / m.orders)}/month at 1,650 COD orders)</div>`;
+}
+$("#previewBtn").onclick = async () => {
+  try { const [cur, nu] = await Promise.all([api("/api/policy/preview", {}), api("/api/policy/preview", readRules())]);
+    $("#previewOut").innerHTML = monthHtml(cur.month, "Current rules") + monthHtml(nu.month, "Your changes"); }
+  catch (e) { $("#previewOut").innerHTML = `<div class="flash neg">${esc(e.message)}</div>`; }
+};
+$("#saveBtn").onclick = async () => {
+  try { const r = await api("/api/policy", readRules());
+    $("#previewOut").innerHTML = monthHtml(r.month, "Saved. The dashboard now uses these rules"); loadDay($("#daySel").value); }
+  catch (e) { $("#previewOut").innerHTML = `<div class="flash neg">${esc(e.message)}</div>`; }
+};
+addEventListener("resize", () => DAY && drawTrend(DAY.trend));
+init().catch(e => document.body.insertAdjacentHTML("beforeend", `<p style="padding:20px">Failed to load: ${esc(e.message)}</p>`));
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# The engine, dashboard and tests run on the Python 3.10+ standard library alone.
+# Install this only to let Claude judge addresses/names and read free-text WhatsApp replies
+# (also needs ANTHROPIC_API_KEY).
+anthropic>=2.3,<3

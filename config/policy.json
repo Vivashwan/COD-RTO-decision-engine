@@ -1,0 +1,73 @@
+{
+  "thresholds": {
+    "_help": "Risk = the model's % chance this COD order comes back (RTO). Orders below nudge_from ship as-is.",
+    "nudge_from": 25,
+    "confirm_from": 50,
+    "hold_from": 75
+  },
+  "rules": {
+    "_help": "Hard rules that override the risk score. true/false or a number.",
+    "hold_if_phone_invalid": false,
+    "hold_if_prior_rto_at_least": 2,
+    "hold_if_fake_name_and_unusable_address": true,
+    "confirm_if_address_unusable": true,
+    "confirm_if_name_implausible": false,
+    "confirm_if_pincode_missing": false,
+    "hold_if_zero_value": true,
+    "first_time_buyers_max_action": "confirm"
+  },
+  "prepaid_nudge": {
+    "_help": "Flat ₹ discount offered to switch from COD to online payment.",
+    "discount_rupees": 40
+  },
+  "whatsapp": {
+    "brand_name": "Kesh & Co.",
+    "_help": "brand_name is a placeholder - put the real store name here. Hours are counted from when the first message is sent. No messages between quiet_start and quiet_end (24h clock).",
+    "reminder_after_hours": 4,
+    "last_call_after_hours": 20,
+    "timeout_hours": 24,
+    "quiet_start": 21,
+    "quiet_end": 8,
+    "confirm_no_reply": "cancel",
+    "nudge_no_reply": "ship_cod",
+    "nudge_window_hours": 6,
+    "hinglish_states": [
+      "Uttar Pradesh",
+      "Bihar",
+      "Madhya Pradesh",
+      "Rajasthan",
+      "Delhi",
+      "Haryana",
+      "Jharkhand",
+      "Chhattisgarh",
+      "Uttarakhand",
+      "Himachal Pradesh"
+    ]
+  },
+  "economics": {
+    "_help": "Given by the business brief.",
+    "gross_margin_pct": 62,
+    "forward_shipping": 65,
+    "return_shipping": 65,
+    "packaging_handling": 25,
+    "rto_damage_rate_pct": 8,
+    "damaged_product_cost": 180,
+    "prepaid_rto_rate_pct": 4,
+    "meta_cac": 300
+  },
+  "assumptions": {
+    "_help": "NOT from data: our best estimates. Measure these in the first 2 weeks (see memo) and update.",
+    "future_value_first_time_buyer": 75,
+    "whatsapp_cost_per_conversation": 1.0,
+    "confirm_catches_rto_pct": 45,
+    "confirm_loses_genuine_pct": 8,
+    "nudge_conversion_pct": 15,
+    "nudge_converter_risk_factor": 0.5,
+    "hold_prepaid_conversion_pct": 10
+  },
+  "llm": {
+    "_help": "Used only for address/name judgement and reading free-text WhatsApp replies. Needs ANTHROPIC_API_KEY; falls back to rules without it.",
+    "enabled": true,
+    "model": "claude-opus-5-5"
+  }
+}

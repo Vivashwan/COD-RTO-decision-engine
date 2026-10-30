@@ -1,0 +1,379 @@
+{
+ "quality": {
+  "raw_rows": 2018,
+  "exact_duplicates_removed": 30,
+  "non_final_status_removed": 1,
+  "status_labels_fixed": 4,
+  "phones_reformatted": 15,
+  "phones_invalid": 17,
+  "pincodes_missing": 12,
+  "zero_value_orders": 3,
+  "prior_rto_exceeds_prior_orders": 4,
+  "notes": []
+ },
+ "districts": [
+  {
+   "pin3": "273",
+   "city": "Gorakhpur",
+   "n": 44,
+   "rto": 0.6363636363636364
+  },
+  {
+   "pin3": "846",
+   "city": "Darbhanga",
+   "n": 61,
+   "rto": 0.6065573770491803
+  },
+  {
+   "pin3": "243",
+   "city": "Bareilly",
+   "n": 33,
+   "rto": 0.6060606060606061
+  },
+  {
+   "pin3": "470",
+   "city": "Sagar",
+   "n": 53,
+   "rto": 0.49056603773584906
+  },
+  {
+   "pin3": "800",
+   "city": "Patna",
+   "n": 80,
+   "rto": 0.475
+  },
+  {
+   "pin3": "324",
+   "city": "Kota",
+   "n": 39,
+   "rto": 0.41025641025641024
+  },
+  {
+   "pin3": "781",
+   "city": "Guwahati",
+   "n": 42,
+   "rto": 0.35714285714285715
+  },
+  {
+   "pin3": "226",
+   "city": "Lucknow",
+   "n": 117,
+   "rto": 0.3247863247863248
+  },
+  {
+   "pin3": "452",
+   "city": "Indore",
+   "n": 72,
+   "rto": 0.3055555555555556
+  },
+  {
+   "pin3": "302",
+   "city": "Jaipur",
+   "n": 120,
+   "rto": 0.26666666666666666
+  },
+  {
+   "pin3": "500",
+   "city": "Hyderabad",
+   "n": 172,
+   "rto": 0.2558139534883721
+  },
+  {
+   "pin3": "560",
+   "city": "Bengaluru",
+   "n": 212,
+   "rto": 0.25
+  },
+  {
+   "pin3": "700",
+   "city": "Kolkata",
+   "n": 127,
+   "rto": 0.2283464566929134
+  },
+  {
+   "pin3": "110",
+   "city": "Delhi",
+   "n": 240,
+   "rto": 0.21666666666666667
+  },
+  {
+   "pin3": "600",
+   "city": "Chennai",
+   "n": 152,
+   "rto": 0.21052631578947367
+  },
+  {
+   "pin3": "400",
+   "city": "Mumbai",
+   "n": 218,
+   "rto": 0.1834862385321101
+  },
+  {
+   "pin3": "411",
+   "city": "Pune",
+   "n": 169,
+   "rto": 0.1834319526627219
+  }
+ ],
+ "address": {
+  "landmark_only": {
+   "n": 481,
+   "rto": 0.3097713097713098
+  },
+  "complete": {
+   "n": 1323,
+   "rto": 0.2290249433106576
+  },
+  "unusable": {
+   "n": 183,
+   "rto": 0.6174863387978142
+  }
+ },
+ "customer": {
+  "first order": {
+   "n": 1495,
+   "rto": 0.30234113712374583
+  },
+  "repeat, never refused": {
+   "n": 350,
+   "rto": 0.14
+  },
+  "repeat, refused 2+": {
+   "n": 30,
+   "rto": 0.7333333333333333
+  },
+  "repeat, refused once": {
+   "n": 112,
+   "rto": 0.375
+  }
+ },
+ "value": {
+  "under \u20b91,500": {
+   "n": 1706,
+   "rto": 0.26670574443141853
+  },
+  "\u20b91,500+": {
+   "n": 281,
+   "rto": 0.3914590747330961
+  }
+ },
+ "source_first_time": {
+  "meta_ads": {
+   "n": 563,
+   "rto": 0.3392539964476021
+  },
+  "direct": {
+   "n": 195,
+   "rto": 0.2205128205128205
+  },
+  "whatsapp_broadcast": {
+   "n": 204,
+   "rto": 0.29411764705882354
+  },
+  "google_ads": {
+   "n": 181,
+   "rto": 0.32044198895027626
+  },
+  "influencer": {
+   "n": 169,
+   "rto": 0.28402366863905326
+  },
+  "instagram_organic": {
+   "n": 183,
+   "rto": 0.28415300546448086
+  }
+ },
+ "unit": {
+  "rto_loss": 169.4,
+  "V_new": 412.38,
+  "V_repeat": 337.38,
+  "breakeven_new": 0.7088246416171061,
+  "breakeven_repeat": 0.6657326650617625,
+  "repeat_orders_per_new": 0.3290969899665552
+ },
+ "discount_table": [
+  [
+   "15%",
+   "\u20b920"
+  ],
+  [
+   "25%",
+   "\u20b949"
+  ],
+  [
+   "35%",
+   "\u20b979"
+  ],
+  [
+   "50%",
+   "\u20b9122"
+  ]
+ ],
+ "grid_best": {
+  "net": 9438,
+  "nudge": 20,
+  "confirm": 60,
+  "hold": 70
+ },
+ "threshold_candidates": [
+  [
+   "20 / 60 / 70",
+   "\u20b99,438",
+   "\u20b92,840",
+   "\u20b91,661",
+   "156 / 33 / 9"
+  ],
+  [
+   "25 / 35 / 75",
+   "\u20b95,801",
+   "\u20b92,336",
+   "-\u20b9700",
+   "61 / 79 / 9"
+  ],
+  [
+   "25 / 40 / 75",
+   "\u20b97,442",
+   "\u20b92,600",
+   "\u20b9279",
+   "79 / 61 / 9"
+  ],
+  [
+   "25 / 50 / 75 **(chosen)**",
+   "\u20b98,877",
+   "\u20b93,093",
+   "\u20b91,737",
+   "99 / 41 / 9"
+  ],
+  [
+   "20 / 50 / 75",
+   "\u20b98,929",
+   "\u20b92,897",
+   "\u20b91,540",
+   "148 / 41 / 9"
+  ]
+ ],
+ "september": {
+  "ops": {
+   "saved": 7486,
+   "lost": 16562,
+   "cost": 354,
+   "net": -9431
+  },
+  "ops_cancelled": 71,
+  "recommended": {
+   "orders": 329,
+   "buckets": {
+    "ship": 180,
+    "nudge": 99,
+    "confirm": 41,
+    "hold": 9
+   },
+   "rto_in_bucket": {
+    "ship": 20,
+    "nudge": 37,
+    "confirm": 21,
+    "hold": 8
+   },
+   "expected": {
+    "saved": 4985,
+    "lost": 2007,
+    "cost": 779,
+    "net": 2199
+   },
+   "actual": {
+    "saved": 5344,
+    "lost": 1499,
+    "cost": 752,
+    "net": 3093
+   },
+   "actual_rto_orders": 86
+  },
+  "no_first_time_cap": {
+   "orders": 329,
+   "buckets": {
+    "ship": 180,
+    "nudge": 99,
+    "confirm": 40,
+    "hold": 10
+   },
+   "rto_in_bucket": {
+    "ship": 20,
+    "nudge": 37,
+    "confirm": 20,
+    "hold": 9
+   },
+   "expected": {
+    "saved": 5079,
+    "lost": 2030,
+    "cost": 783,
+    "net": 2265
+   },
+   "actual": {
+    "saved": 5452,
+    "lost": 1499,
+    "cost": 754,
+    "net": 3199
+   },
+   "actual_rto_orders": 86
+  },
+  "money_optimal": {
+   "saved": 5907,
+   "lost": 1806,
+   "cost": 729,
+   "net": 3372
+  },
+  "money_optimal_counts": {
+   "ship": 142,
+   "confirm": 93,
+   "nudge": 88,
+   "hold": 6
+  },
+  "scale": 5.015197568389058,
+  "bad_areas": [
+   "243",
+   "273",
+   "470",
+   "846"
+  ]
+ },
+ "september_rules": {
+  "fake-looking name AND unusable address": 6,
+  "possible double order": 4,
+  "customer refused 2 earlier COD orders": 3,
+  "address too vague": 3,
+  "first-time buyer": 1,
+  "phone number invalid": 2
+ },
+ "sensitivity": [
+  [
+   "Base case",
+   "\u20b93,093",
+   "\u20b915,512"
+  ],
+  [
+   "Confirmation catches only 25% of RTOs",
+   "\u20b92,381",
+   "\u20b911,941"
+  ],
+  [
+   "Confirmation loses 15% of genuine buyers",
+   "\u20b92,448",
+   "\u20b912,277"
+  ],
+  [
+   "Both of the above",
+   "\u20b91,737",
+   "\u20b98,711"
+  ],
+  [
+   "Only 5% take the prepaid offer",
+   "\u20b92,264",
+   "\u20b911,354"
+  ],
+  [
+   "New buyer worth \u20b9300 more (Marketing's view)",
+   "\u20b93,089",
+   "\u20b915,492"
+  ]
+ ]
+}
