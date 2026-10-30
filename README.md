@@ -13,7 +13,7 @@ Every decision comes with a plain-English reason and its ₹ effect, for example
 
 > *Rule: fake-looking name AND unusable address. 91% chance of return: address "xyz" is too vague for a courier to find; Darbhanga (846xxx): 61% of past COD orders came back (57 orders). Don't ship COD. WhatsApp offers a pay-online link instead.*
 
-**Deliverables:** [business memo](docs/MEMO.md) ([PDF](docs/MEMO.pdf)) · [decision log](docs/DECISION_LOG.md) · [AI usage log](docs/AI_USAGE_LOG.md) · [all numbers, reproducible](reports/findings.md)
+**Deliverables:** [business memo](docs/MEMO.md) ([PDF](docs/MEMO.pdf)) · [decision log](docs/DECISION_LOG.md) ([PDF](docs/DECISION_LOG.pdf)) · [AI usage log](docs/AI_USAGE_LOG.md) ([PDF](docs/AI_USAGE_LOG.pdf)) · [all numbers, reproducible](reports/findings.md)
 
 ## Run it (≈ 2 minutes, no installs)
 

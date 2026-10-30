@@ -24,6 +24,7 @@
 **4. A WhatsApp customer could be cancelled with no final warning.** The AI's first flow sent the "last call" at +20h only outside quiet hours. For a night order, +20h fell at 4am, so it was skipped and the order was cancelled at 08:00 without warning. *Caught by:* running a 02:10 order through the simulator and reading the transcript. *Fix:* the last call goes out in the morning, the deadline moves with it, and a test checks that no message is sent at night and the last call is never skipped.
 
 **5. Smaller ones:**
+
 - Status labels `RTO ` (trailing space) and `Rto` first appeared as separate 0%-RTO groups in exploration. Caught by eyeballing value counts; fixed by normalising in the loader.
 - Offline reply parsing didn't understand "haan bhej do", and "H.No 12, Shastri Nagar" was read as a "no" (because of "No"). Caught in the simulator; fixed by checking for an address before yes/no, and added to the tests.
 - The first ₹ accounting could show *negative* "₹ lost" on nudges, because recovered RTOs were counted in the wrong column. Caught by reading the comparison table; rewritten so saved/lost are split by how each order would have ended, with a test that the expected figure equals the probability-weighted mix of both outcomes.
